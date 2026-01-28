@@ -21,7 +21,7 @@ public class Sentinel {
 
         try {
             // 2. INGEST: Hunt the Target
-            String targetUrl = "http://localhost:8000/pirate-site.html";
+            String targetUrl = "http://localhost:8080/pirate-site.html";
             System.out.println("[*] Sentinel Crawler Activated. Target: " + targetUrl);
 
             driver.get(targetUrl);
