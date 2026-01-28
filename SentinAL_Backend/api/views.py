@@ -6,6 +6,10 @@ from .models import Violation
 from .serializers import ViolationSerializer, CrawlerReportSerializer
 from ai_engine.fuzzy_matcher import identify_asset
 from ai_engine.logic_gate import check_breach
+from django.http import FileResponse
+from ai_engine.gemini_client import draft_legal_notice
+from utils.pdf_generator import generate_notice_pdf
+from django.shortcuts import get_object_or_404
 
 class ReportViolationView(APIView):
     def post(self, request):
@@ -55,3 +59,40 @@ class DashboardFeedView(ListAPIView):
     """
     queryset = Violation.objects.filter(status='OPEN').order_by('-timestamp')
     serializer_class = ViolationSerializer
+
+class EnforceViolationView(APIView):
+    """
+    POST /api/enforce/<id>/
+    Triggers the Kill Switch:
+    1. Generates Legal Text (Gemini)
+    2. Creates PDF
+    3. Returns PDF as download
+    """
+    def post(self, request, pk):
+        # 1. Get the Violation
+        violation = get_object_or_404(Violation, pk=pk)
+        
+        # 2. Prepare Data for AI
+        violation_details = {
+            "asset": violation.asset_name,
+            "url": violation.url,
+            "location": violation.location,
+            "timestamp": str(violation.timestamp),
+            "breach_type": violation.breach_type,
+            "evidence_hash": violation.html_hash
+        }
+
+        # 3. Call AI Lawyer
+        print(f"[*] Drafting Notice for Violation #{pk}...")
+        legal_text = draft_legal_notice(violation_details)
+
+        # 4. Generate PDF
+        print(f"[*] Printing PDF...")
+        pdf_path = generate_notice_pdf(pk, legal_text)
+
+        # 5. Mark as Resolved
+        violation.status = 'RESOLVED'
+        violation.save()
+
+        # 6. Return File
+        return FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')

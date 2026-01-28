@@ -7,4 +7,7 @@ urlpatterns = [
     
     # Endpoint for the React Frontend
     path('violations/', DashboardFeedView.as_view(), name='dashboard_feed'),
+
+    path('enforce/<int:pk>/', EnforceViolationView.as_view(), name='enforce_violation'),
+]
 ]
