@@ -8,12 +8,12 @@ const MapVisualizer = ({ violations }) => {
   // Configuration for the "GitHub" style dark aesthetic
   const globeConfig = {
     pointSize: 1,
-    globeColor: "#060910", // Deep black/blue like GitHub
+    globeColor: "#2c3e50", // A brighter, yet dark, blue-grey
     showAtmosphere: true,
     atmosphereColor: "#1d4ed8",
     atmosphereAltitude: 0.1,
-    emissive: "#060910",
-    emissiveIntensity: 0.1,
+    emissive: "#2c3e50",
+    emissiveIntensity: 0.25,
     shininess: 0.9,
     polygonColor: "rgba(255,255,255,0.7)",
     ambientLight: "#38bdf8",
@@ -69,7 +69,7 @@ const MapVisualizer = ({ violations }) => {
             color="#1d4ed8"
           />
 
-          <Globe data={arcs} />
+          <Globe data={arcs} globeConfig={globeConfig} />
           <OrbitControls enablePan={false} autoRotate autoRotateSpeed={0.5} />
         </Canvas>
       </div>

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { fetchViolations } from "../services/api";
+import { MOCK_VIOLATIONS } from "../mocks/violations";
+
+const USE_MOCK = true; // 🔥 flip to false when backend is ready
 
 export default function useViolations() {
   const [violations, setViolations] = useState([]);
@@ -11,21 +14,31 @@ export default function useViolations() {
 
     async function load() {
       try {
-        const data = await fetchViolations();
+        let data;
+
+        if (USE_MOCK) {
+          data = MOCK_VIOLATIONS;
+        } else {
+          data = await fetchViolations();
+        }
+
         if (isMounted) {
           setViolations(data);
           setLoading(false);
+          setError(null);
         }
       } catch (err) {
         if (isMounted) {
-          setError(err.message);
+          // ⛑️ graceful fallback
+          setViolations(MOCK_VIOLATIONS);
           setLoading(false);
+          setError("Using demo data");
         }
       }
     }
 
-    load(); // initial fetch
-    const interval = setInterval(load, 2000); // poll every 2s
+    load();
+    const interval = setInterval(load, 2000);
 
     return () => {
       isMounted = false;
