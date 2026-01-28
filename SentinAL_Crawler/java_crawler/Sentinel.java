@@ -1,5 +1,3 @@
-package com.sentinal.crawler; // You can remove this line if you aren't using packages
-
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -14,7 +12,7 @@ public class Sentinel {
     public static void main(String[] args) {
         // 1. SETUP: Headless Chrome (The "Ghost" Browser)
         // UPDATE THIS PATH to where your actual chromedriver.exe is located
-        System.setProperty("webdriver.chrome.driver", "java_crawler/chromedriver.exe");
+        System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless"); // Runs in background
