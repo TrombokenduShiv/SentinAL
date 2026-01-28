@@ -1,48 +1,40 @@
-from telethon import TelegramClient, events
-import requests
+import time
 import json
-import asyncio
+import requests
 
-# --- CONFIGURATION ---
-# You get these from https://my.telegram.org
-API_ID = 'YOUR_API_ID_HERE'
-API_HASH = 'YOUR_API_HASH_HERE'
-CHANNEL_TO_WATCH = 'test_piracy_channel' # The username of the channel
-CORE_API_URL = 'http://localhost:8000/api/report/'
+# CONFIGURATION
+API_ENDPOINT = "http://localhost:8000/api/report/"
+PLATFORM = "Telegram"
 
-# Initialize the Client
-client = TelegramClient('sentinal_session', API_ID, API_HASH)
-
-print("[-] Sentinel Watcher (Telegram Module) is listening...")
-
-@client.on(events.NewMessage(chats=CHANNEL_TO_WATCH))
-async def handler(event):
-    message_text = event.raw_text
+def scan_telegram_channel():
+    print(f"[*] Scanning {PLATFORM} channels for leaks...")
+    time.sleep(2) # Fake processing time
     
-    # Simple Keyword Detection (The "Patrol" Phase)
-    if "http" in message_text or "leaked" in message_text.lower():
-        print(f"[!] PIRACY DETECTED in Telegram: {message_text}")
-        
-        # Prepare the payload for Trombokendu's API
-        payload = {
-            "title": "Telegram Leak Detected",
-            "url": "Telegram Channel: " + CHANNEL_TO_WATCH,
-            "uploader": "Anonymous_Telegram_User",
-            "detected_location": "Global (Dark Web)",
-            "timestamp": str(event.date),
-            "status": "DETECTED"
-        }
+    # SIMULATED FINDING
+    # In the real world, this would use the Telegram API
+    leak_found = {
+        "title": "Avengers_Secret_Wars_LEAKED_CAM.mkv",
+        "url": "http://t.me/pirate_bay_official/777",
+        "uploader": "User_X99",
+        "platform": PLATFORM,
+        "risk_level": "HIGH"
+    }
+    
+    print(f"[!] LEAK DETECTED: {leak_found['title']}")
+    return leak_found
 
-        # Send to Django Backend
-        try:
-            response = requests.post(CORE_API_URL, json=payload)
-            if response.status_code == 200:
-                print("[+] Reported to Core Engine.")
-            else:
-                print(f"[-] Report Failed: {response.status_code}")
-        except Exception as e:
-            print(f"[-] Backend Connection Error: {e}")
+def report_leak(data):
+    try:
+        # In a real demo, we uncomment the next line to send to backend
+        # response = requests.post(API_ENDPOINT, json=data)
+        print(f"[+] Reporting to Sentinel Core... SUCCESS")
+        print(f"[+] Payload: {json.dumps(data, indent=2)}")
+    except Exception as e:
+        print(f"[-] Connection Failed: {e}")
 
-# Start the client
-with client:
-    client.run_until_disconnected()
+if __name__ == "__main__":
+    while True:
+        data = scan_telegram_channel()
+        report_leak(data)
+        print("[-] Sleeping for 10 seconds...")
+        time.sleep(10)

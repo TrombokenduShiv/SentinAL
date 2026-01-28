@@ -3,7 +3,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.json.JSONObject; // Requires org.json dependency
+import org.json.JSONObject;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -32,7 +32,6 @@ public class Sentinel {
 
             // 3. EXTRACT: Contextual NLP Data (Who, Where, When)
             String title = doc.title();
-            // These selector names match the <meta> tags in your pirate-site.html
             String uploader = doc.select("meta[name=uploader]").attr("content");
             String location = doc.select("meta[name=server_location]").attr("content");
             String timestamp = doc.select("meta[name=upload_date]").attr("content");
@@ -51,6 +50,12 @@ public class Sentinel {
 
             sendReport(payload);
 
+            // =========================================================
+            // THE FIX: Wait 2 Seconds before hanging up
+            // This prevents "ConnectionResetError" on the Python side
+            // =========================================================
+            Thread.sleep(2000);
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -60,7 +65,7 @@ public class Sentinel {
 
     public static void sendReport(JSONObject json) {
         try {
-            // This endpoint must exist in Trombokendu's Django Backend
+            // This endpoint must exist in Trombokendu's Django Backend (or demo_server.py)
             URL url = new URL("http://localhost:8000/api/report/");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
@@ -71,7 +76,11 @@ public class Sentinel {
                 byte[] input = json.toString().getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
-            System.out.println("[+] Evidence Package Uploaded (HTTP 200)");
+
+            // Optional: Read response code to ensure transmission completes
+            int responseCode = conn.getResponseCode();
+            System.out.println("[+] Evidence Package Uploaded (HTTP " + responseCode + ")");
+
         } catch (Exception e) {
             System.out.println("[-] CORE OFFLINE: " + e.getMessage());
         }
