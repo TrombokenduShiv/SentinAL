@@ -1,0 +1,14 @@
+# Python & Telegram Safety
+*.pyc
+__pycache__/
+*.session
+*.session-journal
+config.py
+venv/
+
+# Java
+*.class
+*.log
+*.jar
+target/
+.idea/
