@@ -4,7 +4,7 @@ import json
 # The Target Endpoint
 url = "http://127.0.0.1:8000/api/report/"
 
-# The Simulated "Pirate" Data (What Alaukik would send)
+# The Malicious Payload to Simulate a Territory Breach Violation
 payload = {
     "scraped_data": {
         "url": "http://123movies.to/avengers-leaked",
