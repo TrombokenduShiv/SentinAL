@@ -13,21 +13,21 @@ const INDIA = { lat: 20.5937, lng: 78.9629 };
 
 /* -------------------- 🌍 GLOBE SCENE -------------------- */
 function GlobeScene({ violations }) {
+  // ✅ FUTURISTIC / MATRIX STYLE CONFIGURATION
   const globeConfig = {
-    pointSize: 10,
-    globeColor: "#062056",
+    pointSize: 4,
+    globeColor: "#000000",            // 🌑 Pitch Black Globe (Void look)
     showAtmosphere: true,
-    atmosphereColor: "#FFFFFF",
+    atmosphereColor: "#333333",       // 🌫️ Dark Grey/White Mist
     atmosphereAltitude: 0.1,
-    emissive: "#062056",
+    emissive: "#111111",              // 🌑 Very dark grey glow
     emissiveIntensity: 0.1,
     shininess: 0.9,
-    // Keep dots bright white
-    polygonColor: "rgba(255, 255, 255, 1.0)", 
-    ambientLight: "#38bdf8",
-    directionalLeftLight: "#ffffff",
-    directionalTopLight: "#ffffff",
-    pointLight: "#ffffff",
+    polygonColor: "rgba(255, 255, 255, 1.0)", // ⚪ Solid Bright White Dots
+    ambientLight: "#333333",          // 💡 White/Grey Ambient Light (No Blue)
+    directionalLeftLight: "#ffffff",  // 💡 Pure White Light
+    directionalTopLight: "#ffffff",   // 💡 Pure White Light
+    pointLight: "#ffffff",            // 💡 Pure White Light
     arcTime: 1000,
     arcLength: 0.9,
     rings: 1,
@@ -37,7 +37,7 @@ function GlobeScene({ violations }) {
     autoRotateSpeed: 0.5,
   };
 
-  const colors = ["#06b6d4", "#3b82f6", "#6366f1"];
+  const colors = ["#ffffff", "#cccccc", "#999999"]; // ⚪ Monochromatic Arcs (Greyscale)
 
   const arcs = useMemo(() => {
     return violations
@@ -54,7 +54,7 @@ function GlobeScene({ violations }) {
           lat: coords.lat,
           lng: coords.lng,
           arcAlt: 0.4,
-          color: colors[Math.floor(Math.random() * (colors.length - 1))],
+          color: colors[Math.floor(Math.random() * colors.length)], // Random greyscale color
         };
       })
       .filter(Boolean);
@@ -62,13 +62,9 @@ function GlobeScene({ violations }) {
 
   return (
     <>
-      <ambientLight intensity={2.7} color="#38bdf8" />
-      <pointLight position={[100, 100, 100]} intensity={2.5} />
-      <pointLight
-        position={[-100, -100, -100]}
-        intensity={1.5}
-        color="#1d4ed8"
-      />
+      <ambientLight intensity={2.0} color="#ffffff" />
+      <pointLight position={[100, 100, 100]} intensity={2.5} color="#ffffff" />
+      <pointLight position={[-100, -100, -100]} intensity={1.5} color="#ffffff" />
 
       <Globe data={arcs} globeConfig={globeConfig} />
 
