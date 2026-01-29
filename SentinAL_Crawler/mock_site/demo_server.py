@@ -1,26 +1,53 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import http.server
+import socketserver
 import json
 
-class DemoHandler(BaseHTTPRequestHandler):
+PORT = 8000
+
+class RequestHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length)
-        data = json.loads(post_data)
-        
-        print("\n" + "="*40)
-        print(f"[+] INTELLIGENCE RECEIVED FROM {data.get('platform', 'WEB')}")
-        print("="*40)
-        print(f"  TARGET:  {data.get('title')}")
-        print(f"  URL:     {data.get('url')}")
-        print(f"  REGION:  {data.get('region', 'UNKNOWN')}")
-        print(f"  RISK:    {data.get('risk_level', 'CRITICAL')}")
-        print("="*40 + "\n")
+        if self.path == '/api/report/':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                
+                # --- THE FIX IS HERE ---
+                # We tell Python to look for 'detected_location' (what Java sends)
+                target = data.get('title', 'Unknown Target')
+                url = data.get('url', 'Unknown URL')
+                
+                # Try getting 'detected_location' first, otherwise 'region', otherwise 'UNKNOWN'
+                region = data.get('detected_location') or data.get('region') or "UNKNOWN"
+                # -----------------------
 
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b'{"status": "CONFIRMED"}')
+                print("\n[+] INTELLIGENCE RECEIVED FROM WEB")
+                print("========================================")
+                print(f"  TARGET:  {target}")
+                print(f"  URL:     {url}")
+                print(f"  REGION:  {region}")
+                print("  RISK:    CRITICAL")
+                print("========================================")
 
-if __name__ == "__main__":
-    print("[*] SENTINAL CENTRAL COMMAND ONLINE (Port 8000)...")
-    HTTPServer(('localhost', 8000), DemoHandler).serve_forever()
-    
+                self.send_response(200)
+                self.end_headers()
+                
+            except Exception as e:
+                print(f"[-] Error parsing data: {e}")
+                self.send_response(400)
+                self.end_headers()
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+print(f"[*] SENTINAL CENTRAL COMMAND ONLINE (Port {PORT})...")
+# Prevent "Address already in use" errors
+socketserver.TCPServer.allow_reuse_address = True
+httpd = socketserver.TCPServer(("", PORT), RequestHandler)
+
+try:
+    httpd.serve_forever()
+except KeyboardInterrupt:
+    print("\n[-] Server shutting down.")
+    httpd.server_close()
