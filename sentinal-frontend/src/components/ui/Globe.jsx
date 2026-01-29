@@ -1,9 +1,10 @@
 import { useEffect, useRef, memo } from "react";
 import { useThree } from "@react-three/fiber";
 import ThreeGlobe from "three-globe";
+import { MeshPhongMaterial } from "three";
 import worldData from "../../assets/globe.json"; //
 
-export const Globe = memo(({ data }) => {
+export const Globe = memo(({ data, globeConfig }) => {
   const globeRef = useRef();
   const { scene } = useThree();
 
@@ -11,13 +12,21 @@ export const Globe = memo(({ data }) => {
     if (!globeRef.current) {
       const globe = new ThreeGlobe()
         .globeImageUrl(null)
+        .globeMaterial(new MeshPhongMaterial({
+          color: globeConfig?.globeColor || "#062056",
+          emissive: globeConfig?.emissive || "#062056",
+          emissiveIntensity: globeConfig?.emissiveIntensity || 0.1,
+          shininess: globeConfig?.shininess || 0.9
+        }))
         .hexPolygonsData(worldData.features)
         .hexPolygonResolution(3)
         .hexPolygonMargin(0.7)
-        .hexPolygonColor(() => "#1d4ed8") // Set globe to deep blue
+        .hexPolygonColor(() => globeConfig?.polygonColor || "rgba(255,255,255,0.7)")
         .showAtmosphere(true)
-        .atmosphereColor("#0000ff")
-        .atmosphereAltitude(0.15);
+        .atmosphereColor(globeConfig?.atmosphereColor || "#FFFFFF")
+        .atmosphereAltitude(globeConfig?.atmosphereAltitude || 0.1);
+
+        globe.rotation.y = Math.PI/2;
 
       globeRef.current = globe;
       scene.add(globe);
@@ -35,7 +44,7 @@ export const Globe = memo(({ data }) => {
         .arcDashGap(2)
         .arcDashAnimateTime(1500);
   
-      // Pulsating Red Dots [cite: 62, 103]
+      // Pulsating White Dots
       globeRef.current
         .htmlElementsData(data)
         .htmlElement((d) => {
@@ -43,7 +52,7 @@ export const Globe = memo(({ data }) => {
           el.innerHTML = `
             <div class="pulse-container">
               <div class="pulse-ring"></div>
-              <div class="pulse-dot" style="background-color: ${d.color}"></div>
+              <div class="pulse-dot" style="background-color: #ffffff"></div>
             </div>
           `;
           return el;

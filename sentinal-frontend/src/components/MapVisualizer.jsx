@@ -16,20 +16,22 @@ import * as THREE from "three";
 
 function PulseRing({ lat, lng }) {
   const ringRef = useRef();
+  const meshRef = useRef();
 
-  // MATCH Aceternity Globe surface radius
+  // ThreeGlobe sphere radius is 100 units
   const GLOBE_RADIUS = 100;
 
   function latLngToWorld(lat, lng, radius = GLOBE_RADIUS) {
-    const phi = (90 - lat) * (Math.PI / 180);
-    const theta = (lng + 180) * (Math.PI / 180);
-
-    const x = -radius * Math.sin(phi) * Math.cos(theta);
+    const phi = (90 - lat) * Math.PI / 180;
+    const theta = lng * Math.PI / 180;
+  
+    const x = radius * Math.sin(phi) * Math.cos(theta);
     const y = radius * Math.cos(phi);
-    const z = radius * Math.sin(phi) * Math.sin(theta);
-
+    const z = -radius * Math.sin(phi) * Math.sin(theta);
+  
     return new THREE.Vector3(x, y, z);
   }
+  
 
   useFrame(({ clock }) => {
     if (!ringRef.current) return;
@@ -41,25 +43,30 @@ function PulseRing({ lat, lng }) {
     ringRef.current.material.opacity = 0.6 - Math.sin(t * 3) * 0.3;
   });
 
-  const position = latLngToWorld(lat, lng);
+  const position = latLngToWorld(lat, lng)
+
+
+
+  // Calculate rotation to make ring parallel to globe surface
+  // The ring should be tangent to the globe at the position
+  // Create a quaternion that rotates from the default orientation to the normal direction
+  const normal = position.clone().normalize();
+  const defaultUp = new THREE.Vector3(0, 0, 1); // Ring's default normal
+  const quaternion = new THREE.Quaternion().setFromUnitVectors(defaultUp, normal);
 
   return (
     <mesh
       ref={ringRef}
       position={position}
-      rotation={[
-        Math.PI / 2,
-        0,
-        0,
-      ]}
-      onUpdate={(self) => self.lookAt(position.clone().multiplyScalar(2))}
+      quaternion={quaternion}
     >
-      <ringGeometry args={[3, 5, 48]} />
+      <ringGeometry args={[2, 3, 32]} />
       <meshBasicMaterial
         color="#ef4444"
         transparent
         opacity={0.6}
         depthTest={false}
+        side={THREE.DoubleSide}
       />
     </mesh>
   );
@@ -69,24 +76,29 @@ function PulseRing({ lat, lng }) {
 /* -------------------- 🌍 GLOBE SCENE -------------------- */
 function GlobeScene({ violations, selectedViolation }) {
   const globeConfig = {
-    pointSize: 1,
-    globeColor: "#2c3e50",
+    pointSize: 10,
+    globeColor: "#062056",
     showAtmosphere: true,
-    atmosphereColor: "#1d4ed8",
+    atmosphereColor: "#FFFFFF",
     atmosphereAltitude: 0.1,
-    emissive: "#2c3e50",
-    emissiveIntensity: 0.25,
+    emissive: "#062056",
+    emissiveIntensity: 0.1,
     shininess: 0.9,
     polygonColor: "rgba(255,255,255,0.7)",
     ambientLight: "#38bdf8",
     directionalLeftLight: "#ffffff",
     directionalTopLight: "#ffffff",
     pointLight: "#ffffff",
-    arcTime: 2000,
+    arcTime: 1000,
     arcLength: 0.9,
     rings: 1,
     maxRings: 3,
+    initialPosition: { lat: 22.3193, lng: 114.1694 },
+    autoRotate: true,
+    autoRotateSpeed: 0.5,
   };
+
+  const colors = ["#06b6d4", "#3b82f6", "#6366f1"];
 
   const arcs = useMemo(() => {
     return violations
@@ -103,7 +115,7 @@ function GlobeScene({ violations, selectedViolation }) {
           lat: coords.lat,
           lng: coords.lng,
           arcAlt: 0.4,
-          color: v.type === "TERRITORY" ? "#fb923c" : "#ef4444",
+          color: colors[Math.floor(Math.random() * (colors.length - 1))],
         };
       })
       .filter(Boolean);
@@ -114,7 +126,7 @@ function GlobeScene({ violations, selectedViolation }) {
 
   return (
     <>
-      <ambientLight intensity={100} />
+      <ambientLight intensity={2.7} color="#38bdf8" />
       <pointLight position={[100, 100, 100]} intensity={2.5} />
       <pointLight
         position={[-100, -100, -100]}
